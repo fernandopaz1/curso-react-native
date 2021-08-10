@@ -1,21 +1,14 @@
 import { StatusBar } from "expo-status-bar";
+import { divide } from "lodash";
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
-export default function App() {
-    return (
-        <View style={styles.container}>
-            <Text>Hola Mundo!</Text>
-            <StatusBar style="auto" />
-        </View>
-    );
-}
+const App = () => {
+  return (
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <Text style={{ fontSize: 30 }}>Hello, world!!</Text>
+    </View>
+  );
+};
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#fff",
-        alignItems: "center",
-        justifyContent: "center",
-    },
-});
+export default App;
