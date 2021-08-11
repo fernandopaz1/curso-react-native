@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 import {
   Text,
   View,
@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import image from "./assets/react-logo.png";
 import * as ImagePicker from "expo-image-picker";
+import * as Sharing from "expo-sharing";
 
 this._spinValue = new Animated.Value(0);
 Animated.loop(
@@ -32,20 +33,27 @@ const spin = this._spinValue.interpolate({
 });
 
 const App = () => {
+  const [selectedImage, setSelectedImage] = useState(null);
 
-  const  [selectedImage, setSelectedImage] = useState(null);
+  const openShareDialog = async () => {
+    if (!(await Sharing.isAvailableAsync())) {
+      alert("Su dispositivos no es compatible con esta opción");
+      return;
+    }
+    await Sharing.shareAsync(selectedImage.localUri);
+    return;
+  };
 
   let openImagePickerAsync = async () => {
     let permisionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permisionResult.granted) {
-      alert("Los permisos son requeridos para acceder a las imagenes")
-      return
+      alert("Los permisos son requeridos para acceder a las imagenes");
+      return;
     }
-    const pickerResult = await ImagePicker.launchImageLibraryAsync()
-    if(pickerResult.cancelled)
-      return
-    setSelectedImage({localUri: pickerResult.uri})
+    const pickerResult = await ImagePicker.launchImageLibraryAsync();
+    if (pickerResult.cancelled) return;
+    setSelectedImage({ localUri: pickerResult.uri });
   };
 
   return (
@@ -72,13 +80,25 @@ const App = () => {
       >
         <Text style={styles.buttonText}>TouchableOpacity</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={openImagePickerAsync}>
-        <Text style={styles.buttonText}>Image Picker</Text>
+
+      <TouchableOpacity onPress={openImagePickerAsync}>
+        <Image
+          source={{
+            uri:
+              selectedImage !== null
+                ? selectedImage.localUri
+                : "https://picsum.photos/200/200",
+          }}
+          style={styles.imagenFija}
+        />
       </TouchableOpacity>
-      <Image
-        source={{uri : selectedImage !== null ? selectedImage.localUri : "https://picsum.photos/200/200"}}
-        style={styles.imagenFija}
-      />
+      {selectedImage ? (
+        <TouchableOpacity style={styles.button} onPress={openShareDialog}>
+          <Text style={styles.buttonText}>Compartir imagen</Text>
+        </TouchableOpacity>
+      ) : (
+        <View />
+      )}
     </View>
   );
 };
@@ -93,7 +113,7 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 30 },
   image: { height: 200, width: 200, transform: [{ rotate: spin }] },
-  imagenFija: { height: 200, width: 200},
+  imagenFija: { height: 200, width: 200 },
   button: {
     alignItems: "center",
     backgroundColor: "#f194ff",
