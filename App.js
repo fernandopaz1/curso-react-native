@@ -23,7 +23,7 @@ const App = () => {
         const permissionResult =
             await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-        if (permissionResult.granted === false) {
+        if (!permissionResult.granted) {
             alert("Permission to camara roll is required");
             return;
         }
@@ -31,7 +31,7 @@ const App = () => {
         const pickerResult = await ImagePicker.launchImageLibraryAsync();
         // console.log(pickerResult)
 
-        if (pickerResult.cancelled === true) {
+        if (pickerResult.cancelled) {
             return;
         }
 
