@@ -1,3 +1,4 @@
+<script src="http://localhost:8097"></script>;
 import React, { useState } from "react";
 import {
     Text,
@@ -13,44 +14,45 @@ import {
 import image from "./assets/react-logo.png";
 import * as ImagePicker from "expo-image-picker";
 import * as Sharing from "expo-sharing";
-import uploadToAnonymousFilesAsync from "anonymous-files";
+import uploadAnonymousFilesAsync from "anonymous-files";
 
 const App = () => {
     const [selectedImage, setSelectedImage] = useState(null);
 
-    let openShareDialog = async () => {
-        if (!(await Sharing.isAvailableAsync())) {
-            alert("Su dispositivos no es compatible con esta opción");
-            return;
-        }
-        await Sharing.shareAsync(selectedImage.localUri);
-        return;
-    };
-
     let openImagePickerAsync = async () => {
-        let permisionResult =
+        const permissionResult =
             await ImagePicker.requestMediaLibraryPermissionsAsync();
-        console.log(permisionResult);
-        if (!permisionResult.granted) {
-            alert("Los permisos son requeridos para acceder a las imagenes");
+
+        if (permissionResult.granted === false) {
+            alert("Permission to camara roll is required");
             return;
         }
+
         const pickerResult = await ImagePicker.launchImageLibraryAsync();
-        if (pickerResult.cancelled) return;
+        // console.log(pickerResult)
+
+        if (pickerResult.cancelled === true) {
+            return;
+        }
 
         if (Platform.OS === "web") {
-            const remoteUri = await uploadToAnonymousFilesAsync(
-                pickerResult.uri
-            );
-            console.log(remoteUri);
-            setSelectedImage({
-                localUri: pickerResult.uri,
-                remoteUri: remoteUri,
-            });
-            return;
+            let remoteUri = await uploadAnonymousFilesAsync(pickerResult.uri);
+            setSelectedImage({ localUri: pickerResult.uri, remoteUri });
         } else {
             setSelectedImage({ localUri: pickerResult.uri });
         }
+    };
+
+    let openShareDialog = async () => {
+        if (!(await Sharing.isAvailableAsync())) {
+            // alert("Sharing, is not available on your platform");
+            alert(
+                `The image share is available for sharing at: ${selectedImage.remoteUri}`
+            );
+            return;
+        }
+
+        await Sharing.shareAsync(selectedImage.localUri);
     };
 
     return (
@@ -77,12 +79,7 @@ const App = () => {
             >
                 <Text style={styles.buttonText}>TouchableOpacity</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-                onPress={async () => {
-                    await openImagePickerAsync();
-                    console.log(selectedImage);
-                }}
-            >
+            <TouchableOpacity onPress={openImagePickerAsync}>
                 <Image
                     source={{
                         uri:
@@ -99,10 +96,7 @@ const App = () => {
                 <View>
                     <TouchableOpacity
                         style={styles.button}
-                        onPress={async () => {
-                            await openShareDialog();
-                            console.log(selectedImage);
-                        }}
+                        onPress={openShareDialog}
                     >
                         <Text style={styles.buttonText}>Compartir</Text>
                     </TouchableOpacity>
