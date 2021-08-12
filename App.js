@@ -37,9 +37,9 @@ const App = () => {
         if (Platform.OS === "web") {
             let remoteUri = await uploadAnonymousFilesAsync(pickerResult.uri);
             setSelectedImage({ localUri: pickerResult.uri, remoteUri });
-        } else {
-            setSelectedImage({ localUri: pickerResult.uri });
-        }
+            return
+        } 
+        setSelectedImage({ localUri: pickerResult.uri });
     };
 
     let openShareDialog = async () => {
@@ -89,26 +89,13 @@ const App = () => {
                     style={styles.imagenFija}
                 />
             </TouchableOpacity>
-            {!selectedImage ? (
-                <View />
-            ) : (
-                <View>
-                    <TouchableOpacity
-                        style={styles.button}
-                        onPress={openShareDialog}
-                    >
-                        <Text style={styles.buttonText}>Compartir</Text>
-                    </TouchableOpacity>
-
-                    {selectedImage.remoteUri ? (
-                        <Text
-                            sryle={styles.buttonText}
-                        >{`Hola ${selectedImage.remoteUri}`}</Text>
-                    ) : (
-                        <View />
-                    )}
-                </View>
-            )}
+            {selectedImage ? (
+        <TouchableOpacity onPress={openShareDialog} style={styles.button}>
+            <Text style={styles.buttonText}>Share this Image</Text>
+        </TouchableOpacity>
+    ) : (
+        <View></View>
+	)}
         </View>
     );
 };
