@@ -4,8 +4,6 @@ import {
     View,
     StyleSheet,
     Image,
-    Animated,
-    Easing,
     Button,
     Alert,
     TouchableHighlight,
@@ -15,11 +13,12 @@ import {
 import image from "./assets/react-logo.png";
 import * as ImagePicker from "expo-image-picker";
 import * as Sharing from "expo-sharing";
+import uploadToAnonymousFilesAsync from "anonymous-files";
 
 const App = () => {
     const [selectedImage, setSelectedImage] = useState(null);
 
-    const openShareDialog = async () => {
+    let openShareDialog = async () => {
         if (!(await Sharing.isAvailableAsync())) {
             alert("Su dispositivos no es compatible con esta opción");
             return;
@@ -31,6 +30,7 @@ const App = () => {
     let openImagePickerAsync = async () => {
         let permisionResult =
             await ImagePicker.requestMediaLibraryPermissionsAsync();
+        console.log(permisionResult);
         if (!permisionResult.granted) {
             alert("Los permisos son requeridos para acceder a las imagenes");
             return;
@@ -39,6 +39,15 @@ const App = () => {
         if (pickerResult.cancelled) return;
 
         if (Platform.OS === "web") {
+            const remoteUri = await uploadToAnonymousFilesAsync(
+                pickerResult.uri
+            );
+            console.log(remoteUri);
+            setSelectedImage({
+                localUri: pickerResult.uri,
+                remoteUri: remoteUri,
+            });
+            return;
         } else {
             setSelectedImage({ localUri: pickerResult.uri });
         }
@@ -68,8 +77,12 @@ const App = () => {
             >
                 <Text style={styles.buttonText}>TouchableOpacity</Text>
             </TouchableOpacity>
-
-            <TouchableOpacity onPress={openImagePickerAsync}>
+            <TouchableOpacity
+                onPress={async () => {
+                    await openImagePickerAsync();
+                    console.log(selectedImage);
+                }}
+            >
                 <Image
                     source={{
                         uri:
@@ -80,15 +93,28 @@ const App = () => {
                     style={styles.imagenFija}
                 />
             </TouchableOpacity>
-            {selectedImage ? (
-                <TouchableOpacity
-                    style={styles.button}
-                    onPress={openShareDialog}
-                >
-                    <Text style={styles.buttonText}>Compartir imagen</Text>
-                </TouchableOpacity>
-            ) : (
+            {!selectedImage ? (
                 <View />
+            ) : (
+                <View>
+                    <TouchableOpacity
+                        style={styles.button}
+                        onPress={async () => {
+                            await openShareDialog();
+                            console.log(selectedImage);
+                        }}
+                    >
+                        <Text style={styles.buttonText}>Compartir</Text>
+                    </TouchableOpacity>
+
+                    {selectedImage.remoteUri ? (
+                        <Text
+                            sryle={styles.buttonText}
+                        >{`Hola ${selectedImage.remoteUri}`}</Text>
+                    ) : (
+                        <View />
+                    )}
+                </View>
             )}
         </View>
     );
