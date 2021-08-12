@@ -10,6 +10,7 @@ import {
     Alert,
     TouchableHighlight,
     TouchableOpacity,
+    Platform,
 } from "react-native";
 import image from "./assets/react-logo.png";
 import * as ImagePicker from "expo-image-picker";
@@ -36,12 +37,17 @@ const App = () => {
         }
         const pickerResult = await ImagePicker.launchImageLibraryAsync();
         if (pickerResult.cancelled) return;
-        setSelectedImage({ localUri: pickerResult.uri });
+
+        if (Platform.OS === "web") {
+        } else {
+            setSelectedImage({ localUri: pickerResult.uri });
+        }
     };
 
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Hello, world!!</Text>
+            <Image style={styles.imagenFija} source={image} />
             <Button
                 title="Button"
                 color="#f194ff"
